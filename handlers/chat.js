@@ -19,6 +19,17 @@ const rootDir = process.cwd();
 
 const get = ({ response }) => {
   // implementation
+  const filePath = path.join(rootDir, 'chat.html');
+  const readStream = fs.createReadStream(filePath);
+
+  readStream.on('error', (error) => {
+    console.error(error);
+    response.writeHead(500);
+    response.end('Internal Server Error');
+  });
+
+  response.setHeader('Content-Type', 'text/html');
+  readStream.pipe(response);
 };
 
 /**
@@ -35,6 +46,18 @@ const get = ({ response }) => {
 
 const getUsername = async ({ response }) => {
   // implementation
+  try {
+    const username = { username: `user_${shortid.generate()}` };
+    const json = JSON.stringify(username);
+
+    response.setHeader('Content-Type', 'application/json');
+    response.writeHead(200);
+    response.end(json);
+  } catch (error) {
+    console.error(error);
+    response.writeHead(500);
+    response.end('Internal Server Error');
+  }
 };
 
 module.exports = { get, getUsername };

@@ -8,11 +8,11 @@ const { nwsGetEnvContent } = require('./libraries/utilities');
 const ENV_PATH = path.join(__dirname, '.env');
 
 const args = process.argv.slice(2, process.argv.length);
-const bypassCheck = args.some(arg => arg === '--bypass' || '-b');
+const bypassCheck = args.some((arg) => arg === '--bypass' || '-b');
 
 function createEnv() {
   const envFileContent = nwsGetEnvContent();
-  fs.writeFile(ENV_PATH, envFileContent, 'utf8', err => {
+  fs.writeFile(ENV_PATH, envFileContent, 'utf8', (err) => {
     if (err) {
       throw err;
     }
@@ -50,7 +50,7 @@ function checkEnv() {
   readEnv();
 }
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   logger.log(`pid ${process.pid}\n${err.message}`);
   process.exit(0);
 });

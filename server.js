@@ -4,7 +4,7 @@
 
 const http = require('http');
 const logger = require('./libraries/logger');
-const chatHandler = require('./handlers/chat');
+const chatHandlers = require('./handlers/chat');
 
 // get the PORT from .env
 const PORT = process.env.PORT || 1234;
@@ -28,16 +28,16 @@ server.on('request', (request, response) => {
     //
     // Uncomment for next tasks
     //
-    // case '/chat': {
-    //   const ctx = { request, response };
-    //   chatHandler.get(ctx);
-    //   break;
-    // }
-    // case '/chat/username': {
-    //   const ctx = { request, response };
-    //   chatHandler.getUsername(ctx);
-    //   break;
-    // }
+    case '/chat': {
+      const ctx = { request, response };
+      chatHandlers.get(ctx);
+      break;
+    }
+    case '/chat/username': {
+      const ctx = { request, response };
+      chatHandlers.getUsername(ctx);
+      break;
+    }
     default:
       response.writeHead(404, { 'Content-Type': 'text/plain' });
       response.end('Not Found!');
@@ -50,7 +50,7 @@ server.listen(PORT, () => {
 });
 
 // catch uncaught exceptions
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   logger.log(`pid ${process.pid}: ${err.message}`);
   process.exit(0);
 });
