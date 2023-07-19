@@ -1,3 +1,5 @@
+const fs = require('fs');
+const os = require('os');
 const { ENVVALUES } = require('./constants');
 
 const ENV_PATH = '.env'; // path to the .env file
@@ -23,8 +25,14 @@ const nwsGetEnvContent = () => {
  * Note: if an error occurs throw an exception.
  */
 
- function readEnv() {
+function readEnv() {
   // TODO: provide implementation
+  fs.readFile(ENV_PATH, (err, data) => {
+    if (err) {
+      throw err;
+    }
+    console.log(data.toString());
+  });
 }
 
 /**
@@ -40,7 +48,12 @@ const nwsGetEnvContent = () => {
 
 function createEnv() {
   const envFileContents = nwsGetEnvContent();
-  //TODO: provide implementation
+  fs.writeFile(ENV_PATH, envFileContents, (err) => {
+    if (err) {
+      throw err;
+    }
+    console.log('Finish configuration.');
+  });
 }
 
 /**
@@ -64,6 +77,17 @@ function createEnv() {
 function checkEnv() {
   // TODO: provide implementation
   // HINT: use the `existsSync` method from the fs module
+  const { platform, arch, release, freemem } = os;
+
+  console.log(
+    `running on ${platform} ${arch} ${release} and the ${freemem} of your RAM is free. `
+  );
+
+  const data = fs.existsSync(ENV_PATH, { encoding: 'utf-8' });
+  if (!data) {
+    createEnv();
+  }
+  readEnv();
 }
 
 // start here
