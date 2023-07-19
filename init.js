@@ -2,28 +2,22 @@ const fs = require('fs');
 const { platform, arch, release, totalmem, freemem } = require('os');
 const path = require('path');
 const { ENVVALUES } = require('./constants');
+const logger = require('./libraries/logger');
+const { nwsGetEnvContent } = require('./libraries/utilities');
 
 const ENV_PATH = path.join(__dirname, '.env');
 const LOG_DIR = path.join(__dirname, './logs');
 
 const args = process.argv.slice(2, process.argv.length);
-const bypassCheck = args.some(arg => arg === '--bypass' || '-b');
+const bypassCheck = args.some((arg) => arg === '--bypass' || '-b');
 
 /**
  * Task 1: Move to /libraries/utilities.js
  */
 
-const nwsGetEnvContent = () => {
-  const envValues = ENVVALUES.reduce((acc, envValue) => {
-    const { name, value } = envValue;
-    return [...acc, `${name}=${value}`];
-  }, []);
-  return envValues.join('\n');
-};
-
 function createEnv() {
   const envFileContent = nwsGetEnvContent();
-  fs.writeFile(ENV_PATH, envFileContent, 'utf8', err => {
+  fs.writeFile(ENV_PATH, envFileContent, 'utf8', (err) => {
     if (err) {
       throw err;
     }
@@ -53,7 +47,7 @@ function checkEnv() {
     return;
   }
 
-  fs.stat(LOG_DIR, err => {
+  fs.stat(LOG_DIR, (err) => {
     if (!err) {
       console.log('file or directory exists');
     } else if (err.code === 'ENOENT') {
@@ -75,8 +69,9 @@ function checkEnv() {
 /**
  * Task 3: Use the logger module to handle logging
  */
+logger.log('Hello friend', { key: 'value' }, [1, 2, 3]);
 
-process.on('uncaughtException', err => {
+process.on('uncaughtException', (err) => {
   console.log(`pid ${process.pid}\n${err.message}`);
   process.exit(0);
 });

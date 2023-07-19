@@ -1,4 +1,9 @@
+const fs = require('fs');
+const path = require('path');
+const { cwd } = require('process');
 const { nwsFormatDate, nwsConcatValues } = require('./utilities');
+
+const LOGS_PATH = path.join(cwd(), 'logs');
 
 /**
  * Task 2
@@ -26,16 +31,14 @@ const { nwsFormatDate, nwsConcatValues } = require('./utilities');
  */
 
 //
-// const LOGS_PATH = ...
-//
-// try {
-//   if (!fs.existsSync(LOGS_PATH)) {
-//     fs.mkdirSync(LOGS_PATH);
-//   }
-// } catch (err) {
-//   console.log(err);
-// }
-//
+
+try {
+  if (!fs.existsSync(LOGS_PATH)) {
+    fs.mkdirSync(LOGS_PATH);
+  }
+} catch (err) {
+  console.log(err);
+}
 
 const logger = {
   logToFile: true,
@@ -43,8 +46,22 @@ const logger = {
   log(...args) {
     const now = new Date();
     const nowFormat = nwsFormatDate(now);
-    const data = nwsConcatValues(args);
+    const formattedArgs = args.map((arg) => JSON.stringify(arg)).join(', ');
 
+    if (this.logToFile) {
+      console.log(`[${nowFormat}, ${formattedArgs}]`);
+    }
+
+    if (this.logToFile) {
+      const logFilePath = path.join(LOGS_PATH, 'debug.log');
+      const logEntry = `[${nowFormat}, ${formattedArgs}]\n`;
+
+      fs.appendFile(logFilePath, logEntry, 'utf8', (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
     /**
      * Hint: use the process api to get the path of the logs directory
      */
