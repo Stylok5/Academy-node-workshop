@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
-
 // promisify readFile utility
 const stat = promisify(fs.stat);
 const readFile = promisify(fs.readFile);
@@ -12,6 +11,9 @@ const readFile = promisify(fs.readFile);
  * Create a variable that points to the project's root directory and another variable
  * that points to the 'static' folder.
  */
+const rootDir = path.resolve(__dirname, '..');
+
+const staticDir = path.join(rootDir, 'static');
 
 const middleware = async ({ request, response }, next) => {
   /**
@@ -24,8 +26,24 @@ const middleware = async ({ request, response }, next) => {
    * Subtask: if path is not file (e.g a route /home) continue the chain..
    *
    */
+  // remove before start the task
+  const { url } = request;
+  const filePath = path.join(staticDir, url);
 
-  next(); // remove before start the task
+  try {
+    const filesStats = await fs.promises.stat(filePath);
+
+    if (filesStats.isFile()) {
+      const fileContent = await fs.promises.readFile(filePath, 'utf8');
+
+      response.writeHead(200, { 'Content-Type': 'text/html' });
+      response.end(fileContent);
+    } else {
+      next();
+    }
+  } catch (error) {
+    next();
+  }
 };
 
 module.exports = middleware;

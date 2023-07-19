@@ -4,7 +4,7 @@
 
 const { ENVVALUES } = require('../constants');
 
-const nwsFormatDate = date => {
+const nwsFormatDate = (date) => {
   const dateFormat = [
     date.getDate(),
     date.getMonth() + 1,
@@ -34,7 +34,7 @@ const nwsGetEnvContent = () => {
 
 exports.nwsGetEnvContent = nwsGetEnvContent;
 
-const nwsConcatValues = args => {
+const nwsConcatValues = (args) => {
   const values = Object.values(args);
 
   return values.reduce((txt, element) => {
