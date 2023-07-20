@@ -2,7 +2,7 @@ const socketIO = require('socket.io');
 const { Model: MessageModel } = require('./models/Message');
 const { messagesPerMinute } = require('./libraries/utilities');
 
-const init = async server => {
+const init = async (server) => {
   // server start time
   const startTime = Math.round(new Date().getTime() / 1000);
 
@@ -27,7 +27,28 @@ const init = async server => {
     .exec();
 
   const perMinuteMessages = messagesPerMinute(messages).toFixed(2);
+  analytics.perMinute = perMinuteMessages;
 
+  io.on('connection', (socket) => {
+    analytics.connected++;
+    io.emit('analytics', analytics);
+
+    socket.on('disconnect', () => {
+      analytics.connected--;
+      io.emit('analytics', analytics);
+    });
+    socket.on('newMessage', async (data) => {
+      analytics.totalMessages++;
+
+      const currentTime = Math.round(new Date().getTime() / 1000);
+      const timeElapsed = currentTime - startTime;
+      analytics.perMinute = (
+        analytics.totalMessages /
+        (timeElapsed / 60)
+      ).toFixed(2);
+      io.emit('analytics', analytics);
+    });
+  });
   /**
    *
    *  Task 1: Update analytics and notify the connected clients.
@@ -43,9 +64,18 @@ const init = async server => {
    *  messagesPerMinute calculation into a 5 sec period and then broadcast
    *  the updated analytics to the clients.
    */
+  setInterval(async () => {
+    const messages = await MessageModel.find({ timestamp: { $gte: startTime}}).sort({ timestamp: 1})
+    .exec();
 
-  io.on('connection', socket => {
-    socket.on('client:message', async data => {
+    const perMinuteMessages = messagesPerMinute(messages).toFixed(2);
+    analytics.perMinute = perMinuteMessages;
+
+    io.emit('analytics', analytics);},5000);
+  };
+
+  io.on('connection', (socket) => {
+    socket.on('client:message', async (data) => {
       // create and save new message to database
       const message = await MessageModel.create({
         text: data.text,

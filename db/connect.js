@@ -22,7 +22,7 @@ const connect = () => {
       useFindAndModify: false,
     });
 
-    db.on('error', error => reject(error));
+    db.on('error', (error) => reject(error));
 
     db.once('open', () => {
       resolve('Database connection: OK');
