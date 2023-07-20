@@ -1,8 +1,22 @@
 const socketIO = require('socket.io');
 const { Model: MessageModel } = require('./models/Message');
 
-const init = async server => {
+const init = async (server) => {
   const io = socketIO(server); // initialize socket.io
+  io.on('connection', (socket) => {
+    socket.emit('server:message', {
+      greeting: 'Hello there!',
+    });
+    socket.on('client:message', async (data) => {
+      console.log(data);
+
+      const message = await MessageModel.create({
+        text: data.text,
+        username: data.username,
+      });
+      io.emit('server:message', message);
+    });
+  });
 
   /**
    * Task 1: Use socket.io to receive/send realtime messages
@@ -23,7 +37,7 @@ const init = async server => {
    *  to all connected clients.
    */
 
-  io.on('connection', socket => {
+  io.on('connection', (socket) => {
     // implementation
   });
 };
