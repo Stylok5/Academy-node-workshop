@@ -1,9 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const shortid = require('shortid');
-const logger = require('../libraries/logger');
-
+const { pipeline } = require('stream');
+// const logger = require('../libraries/logger');
 const rootDir = process.cwd();
+// const { promisify } = require('util');
+// const pipelineAsync = promisify(pipeline);
+// const readable = fs.createReadStream("input.text");
 
 /**
  *
@@ -19,17 +22,35 @@ const rootDir = process.cwd();
 
 const get = ({ response }) => {
   // implementation
-  const filePath = path.join(rootDir, 'chat.html');
+  const filePath = path.join(rootDir, 'views/chat.html');
   const readStream = fs.createReadStream(filePath);
-
-  readStream.on('error', (error) => {
-    console.error(error);
-    response.writeHead(500);
-    response.end('Internal Server Error');
-  });
-
+  const writable = response;
   response.setHeader('Content-Type', 'text/html');
-  readStream.pipe(response);
+
+  (async function run() {
+    try {
+      await pipeline(readStream, writable, (error) => {
+        if (error) {
+          console.error('pipeline failed with error:', error);
+          response.writeHead(500);
+          response.end('Internal Server Error');
+        } else {
+          console.log('pipeline accomplished.');
+        }
+      });
+    } catch (err) {
+      console.error('pipeline failed with error:', err);
+    }
+  })();
+
+  // readStream.on('error', (error) => {
+  //   console.error(error);
+  //   response.writeHead(500);
+  //   response.end('Internal Server Error');
+  // });
+
+  // response.setHeader('Content-Type', 'text/html');
+  // readStream.pipe(response);
 };
 
 /**
