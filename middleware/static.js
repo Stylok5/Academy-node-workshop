@@ -11,8 +11,8 @@ const readFile = promisify(fs.readFile);
  * Create a variable that points to the project's root directory and another variable
  * that points to the 'static' folder.
  */
-const rootDir = path.resolve(__dirname, '..');
 
+const rootDir = process.cwd();
 const staticDir = path.join(rootDir, 'static');
 
 const middleware = async ({ request, response }, next) => {
@@ -28,13 +28,13 @@ const middleware = async ({ request, response }, next) => {
    */
   // remove before start the task
   const { url } = request;
-  const filePath = path.join(staticDir, url);
+  const finalPath = path.join(staticDir, url);
 
   try {
-    const filesStats = await fs.promises.stat(filePath);
+    const filesStats = await stat(finalPath);
 
     if (filesStats.isFile()) {
-      const fileContent = await fs.promises.readFile(filePath, 'utf8');
+      const fileContent = await readFile(finalPath, 'utf8');
 
       response.writeHead(200, { 'Content-Type': 'text/html' });
       response.end(fileContent);
