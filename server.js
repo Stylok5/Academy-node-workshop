@@ -29,28 +29,25 @@ const logger = require('./libraries/logger');
  *
  */
 
-const router = { '/': '<h1>Index Page</h1>', '/about': '<h1>About page</h1>' };
+const router = { '/': '<h1>Index Page</h1>', about: '<h1>About page</h1>' };
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World!');
+  // res.writeHead(200, { 'Content-Type': 'text/plain' });
+  // res.end('Hello World!');
 
   if (req.method === 'GET') {
     const route = req.url;
     const response = router[route];
 
     if (response) {
-      res.setHeader('Content-Type', 'text/html');
-      res.writeHead(200);
+      res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(response);
     } else {
-      res.setHeader('Content-Type', 'text/plain');
-      res.writeHead(404);
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('404 Not Found');
     }
   } else {
-    res.setHeader('Content-Type', 'text/plain');
-    res.writeHead(405);
+    res.writeHead(405, { 'Content-Type': 'text/plain' });
     res.end('Method Not Allowed');
   }
 });
