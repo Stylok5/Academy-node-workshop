@@ -7,7 +7,7 @@ const http = require('http');
 const Router = require('./libraries/router');
 const logger = require('./libraries/logger');
 const templateEngine = require('./libraries/html');
-const staticMiddleware = require('./middleware/static');
+const staticMiddleware = require('./middleware/static.js');
 const chatHandler = require('./handlers/chat');
 
 // initialize router

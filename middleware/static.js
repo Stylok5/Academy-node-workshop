@@ -15,35 +15,63 @@ const readFile = promisify(fs.readFile);
 const rootDir = process.cwd();
 const staticDir = path.join(rootDir, 'static');
 
-const middleware = async ({ request, response }, next) => {
-  /**
-   * Task 2: Write the static middleware
-   *
-   * When a request comes in, get the URL and try to open (from the 'static' folder)
-   * a file with the URL as the filename. If the file exists send the contents to the
-   * client else call the next middleware
-   *
-   * Subtask: if path is not file (e.g a route /home) continue the chain..
-   *
-   */
-  // remove before start the task
+/**
+ * Task 2: Write the static middleware
+ *
+ * When a request comes in, get the URL and try to open (from the 'static' folder)
+ * a file with the URL as the filename. If the file exists send the contents to the
+ * client else call the next middleware
+ *
+ * Subtask: if path is not file (e.g a route /home) continue the chain..
+ *
+ */
+
+// remove before start the task
+
+const staticMiddleware = async ({ request, response }, next) => {
   const { url } = request;
-  const finalPath = path.join(staticDir, url);
+  const staticFilePath = path.join(staticDir, url);
 
   try {
-    const filesStats = await stat(finalPath);
+    const staticFileStats = await stat(staticFilePath);
 
-    if (filesStats.isFile()) {
-      const fileContent = await readFile(finalPath, 'utf8');
+    if (staticFileStats.isFile()) {
+      const fileContent = await readFile(staticFilePath, 'utf8');
+      const fileExtension = path.extname(staticFilePath);
+      let contentType = 'text/plain';
 
-      response.writeHead(200, { 'Content-Type': 'text/html' });
+      if (fileExtension === '.css') {
+        contentType = 'text/css';
+      } else if (fileExtension === '.js') {
+        contentType = 'application/javascript';
+      } else if (fileExtension === '.png') {
+        contentType = 'image/png';
+      }
+      response.writeHead(200, { 'Content-Type': contentType });
       response.end(fileContent);
-    } else {
-      next();
+      return;
     }
   } catch (error) {
-    next();
+    // File not found in the 'static' folder, try the 'handlers' folder
   }
+  const handlersDir = path.join(rootDir, 'handlers');
+  const handlersFilePath = path.join(handlersDir, url);
+
+  try {
+    const handlersFileStats = await stat(handlersFilePath);
+
+    if (handlersFileStats.isFile()) {
+      const fileContent = await readFile(handlersFilePath, 'utf8');
+      response.writeHead(200, { 'Content-Type': 'application/javascript' });
+      response.end(fileContent);
+      return;
+    }
+  } catch (error) {
+    // File not found in both 'static' and 'handlers' folders, continue the chain
+  }
+
+  // If the file is not found in either folder, call the next middleware
+  next();
 };
 
-module.exports = middleware;
+module.exports = staticMiddleware;
