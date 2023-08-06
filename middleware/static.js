@@ -15,20 +15,39 @@ const readFile = promisify(fs.readFile);
 const rootDir = process.cwd();
 const staticDir = path.join(rootDir, 'static');
 
-/**
- * Task 2: Write the static middleware
- *
- * When a request comes in, get the URL and try to open (from the 'static' folder)
- * a file with the URL as the filename. If the file exists send the contents to the
- * client else call the next middleware
- *
- * Subtask: if path is not file (e.g a route /home) continue the chain..
- *
- */
+const middleware = async ({ request, response }, next) => {
+  /**
+   * Task 2: Write the static middleware
+   *
+   * When a request comes in, get the URL and try to open (from the 'static' folder)
+   * a file with the URL as the filename. If the file exists send the contents to the
+   * client else call the next middleware
+   *
+   * Subtask: if path is not file (e.g a route /home) continue the chain..
+   *
+   */
+  // remove before start the task
+  const { url } = request;
+  const finalPath = path.join(staticDir, url);
 
-// remove before start the task
+  try {
+    const filesStats = await stat(finalPath);
 
-const staticMiddleware = async ({ request, response }, next) => {
+    if (!filesStats.isFile()) {
+      return next();
+    }
+
+    const fileContent = await readFile(finalPath, 'utf8');
+    response.writeHead(200, { 'Content-Type': 'text/css' });
+    response.end(fileContent);
+  } catch (error) {
+    next();
+  }
+};
+
+module.exports = middleware;
+
+/*const staticMiddleware = async ({ request, response }, next) => {
   const { url } = request;
   const staticFilePath = path.join(staticDir, url);
 
@@ -46,7 +65,12 @@ const staticMiddleware = async ({ request, response }, next) => {
         contentType = 'application/javascript';
       } else if (fileExtension === '.png') {
         contentType = 'image/png';
+      } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
+        contentType = 'image/jpeg';
+      } else if (fileExtension === '.gif') {
+        contentType = 'image/gif';
       }
+
       response.writeHead(200, { 'Content-Type': contentType });
       response.end(fileContent);
       return;
@@ -73,5 +97,4 @@ const staticMiddleware = async ({ request, response }, next) => {
   // If the file is not found in either folder, call the next middleware
   next();
 };
-
-module.exports = staticMiddleware;
+*/
